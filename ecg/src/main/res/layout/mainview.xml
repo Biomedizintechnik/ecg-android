@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <android.opengl.GLSurfaceView
+        android:id="@+id/glView"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" />
+
+    <ImageView
+        android:layout_width="23dp"
+        android:layout_height="72dp"
+        android:id="@+id/logoView"
+        android:src="@drawable/fhlogo"
+        android:contentDescription="Logo"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="5dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Connected"
+        android:id="@+id/statusText"
+        android:paddingRight="9dp"
+        android:paddingTop="4dp"
+        android:layout_gravity="right" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0"
+        android:id="@+id/rateText"
+        android:layout_gravity="right|bottom"
+        android:textSize="50sp"
+        android:layout_marginRight="50dp" />
+
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/heartImage"
+        android:layout_gravity="right|bottom"
+        android:src="@drawable/heart"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="15dp"
+        android:visibility="invisible"
+        />
+
+</FrameLayout>
