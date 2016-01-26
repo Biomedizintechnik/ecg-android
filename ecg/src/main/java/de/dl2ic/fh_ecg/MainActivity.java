@@ -1,4 +1,4 @@
-package de.dl2ic.fhecg;
+package de.dl2ic.fh_ecg;
 
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.BluetoothDevice;
@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.app.Activity;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
@@ -25,11 +26,14 @@ public class MainActivity extends Activity {
     private BluetoothSocket socket;
     private BluetoothAdapter adapter;
     private EcgGraphBuffer graphBuffer;
+    private DataTransport transport;
     private boolean connected;
 
     private TextView statusText;
     private TextView rateText;
     private ImageView heartImage;
+    private int pulse;
+    private Handler beatHandler;
 
     private ToneGenerator toneGenerator;
 
@@ -56,6 +60,7 @@ public class MainActivity extends Activity {
         statusText = (TextView)findViewById(R.id.statusText);
         rateText = (TextView)findViewById(R.id.rateText);
         heartImage = (ImageView)findViewById(R.id.heartImage);
+        beatHandler = new Handler();
 
         //transport = new DataTransport();
         //transport.start();
@@ -82,6 +87,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onPause() {
+        super.onPause();
         this.finish();
         System.exit(0);
     }
@@ -104,7 +110,7 @@ public class MainActivity extends Activity {
         BluetoothDevice ecgDevice = null;
 
         for (BluetoothDevice device : bondedDevices) {
-            if (device.getName().equals("ECG")) {
+            if (device.getName().startsWith("ECG")) {
                 ecgDevice = device;
             }
         }
@@ -116,6 +122,14 @@ public class MainActivity extends Activity {
                 }
             });
             return;
+        }
+        else {
+            final BluetoothDevice device = ecgDevice;
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Connecting to " + device.getName(), Toast.LENGTH_SHORT).show();
+                }
+            });
         }
 
         try {
@@ -145,30 +159,24 @@ public class MainActivity extends Activity {
         graphBuffer.insertValue(value);
     }
 
-    private void pulseUpdate(final int pulse) {
-        new Thread(new Runnable() {
-            public void run() {
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        rateText.setText(String.valueOf(pulse));
-                        heartImage.setVisibility(View.VISIBLE);
-                    }
-                });
-                try {
-                    Thread.sleep(100);
-                }
-                catch (InterruptedException e) {
-                    // ignore
-                }
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        heartImage.setVisibility(View.INVISIBLE);
-                    }
-                });
-            }
-        }).start();
+    private final Runnable beatOn = new Runnable() {
+        public void run() {
+            rateText.setText(String.valueOf(pulse));
+            heartImage.setVisibility(View.VISIBLE);
+            toneGenerator.play();
+        }
+    };
 
-        toneGenerator.play();
+    private final Runnable beatOff = new Runnable() {
+        public void run() {
+            heartImage.setVisibility(View.INVISIBLE);
+        }
+    };
+
+    private void pulseUpdate(int pulse) {
+        this.pulse = pulse;
+        beatHandler.post(beatOn);
+        beatHandler.postDelayed(beatOff, 100);
     }
 
     private void listenForData() {
@@ -209,7 +217,6 @@ public class MainActivity extends Activity {
             if (type == 0) {
                 int value = byte2;
                 value |= (byte1 & 0b00011111) << 7;
-
                 ecgUpdate(value);
             }
             else if (type == 1) {
