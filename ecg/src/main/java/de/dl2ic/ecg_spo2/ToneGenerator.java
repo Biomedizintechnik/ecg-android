@@ -1,4 +1,4 @@
-package de.dl2ic.fh_ecg;
+package de.dl2ic.ecg_spo2;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;

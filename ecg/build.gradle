@@ -5,7 +5,7 @@ android {
     buildToolsVersion "23.0.2"
 
     defaultConfig {
-        applicationId "de.dl2ic.fh_ecg"
+        applicationId "de.dl2ic.ecg_spo2"
         minSdkVersion 15
         targetSdkVersion 20
         versionCode 1

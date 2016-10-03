@@ -1,4 +1,4 @@
-package de.dl2ic.fh_ecg;
+package de.dl2ic.ecg_spo2;
 
 import android.bluetooth.BluetoothSocket;
 import android.bluetooth.BluetoothDevice;
@@ -20,20 +20,30 @@ import java.io.InputStream;
 
 import java.io.IOException;
 
+enum ProtocolState {
+    WaitForFrameStart,
+    FrameStarted,
+    WaitForOptionalData
+}
+
 public class MainActivity extends Activity {
     private GLSurfaceView glView;
-    private EcgRenderer renderer;
+    private GraphRenderer renderer;
     private BluetoothSocket socket;
     private BluetoothAdapter adapter;
-    private EcgGraphBuffer graphBuffer;
+    private GraphBuffer graphBuffer;
     private DataTransport transport;
     private boolean connected;
+    private ProtocolState protocolState;
 
     private TextView statusText;
     private TextView rateText;
+    private TextView spo2Text;
     private ImageView heartImage;
+    private Handler updateHandler;
+
     private int pulse;
-    private Handler beatHandler;
+    private int spo2;
 
     private ToneGenerator toneGenerator;
 
@@ -47,8 +57,8 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.mainview);
 
-        graphBuffer = new EcgGraphBuffer(500);
-        renderer = new EcgRenderer(graphBuffer);
+        graphBuffer = new GraphBuffer(500);
+        renderer = new GraphRenderer(graphBuffer);
         toneGenerator = new ToneGenerator(100, 800);
         adapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -59,13 +69,15 @@ public class MainActivity extends Activity {
 
         statusText = (TextView)findViewById(R.id.statusText);
         rateText = (TextView)findViewById(R.id.rateText);
+        spo2Text = (TextView)findViewById(R.id.spo2Text);
         heartImage = (ImageView)findViewById(R.id.heartImage);
-        beatHandler = new Handler();
+        updateHandler = new Handler();
 
         //transport = new DataTransport();
         //transport.start();
         //transport.connect("10.0.0.19", 43531);
 
+        protocolState = ProtocolState.WaitForFrameStart;
         setConnected(false);
 
         new Thread(new Runnable() {
@@ -155,10 +167,6 @@ public class MainActivity extends Activity {
         setConnected(false);
     }
 
-    private void ecgUpdate(int value) {
-        graphBuffer.insertValue(value);
-    }
-
     private final Runnable beatOn = new Runnable() {
         public void run() {
             rateText.setText(String.valueOf(pulse));
@@ -173,10 +181,22 @@ public class MainActivity extends Activity {
         }
     };
 
+    private final Runnable spo2Update = new Runnable() {
+        public void run() {
+            spo2Text.setText(String.valueOf(spo2));
+        }
+    };
+
     private void pulseUpdate(int pulse) {
         this.pulse = pulse;
-        beatHandler.post(beatOn);
-        beatHandler.postDelayed(beatOff, 100);
+        updateHandler.post(beatOn);
+        updateHandler.postDelayed(beatOff, 100);
+    }
+
+
+    private void spo2Update(int spo2) {
+        this.spo2 = spo2;
+        updateHandler.post(spo2Update);
     }
 
     private void listenForData() {
@@ -190,44 +210,79 @@ public class MainActivity extends Activity {
 
         while (true) {
             int byte1, byte2;
-            try {
-                byte1 = stream.read();
-            }
-            catch (IOException e) {
-                return;
-            }
+            switch (protocolState) {
+                case WaitForFrameStart:
+                    try { byte1 = stream.read(); }
+                    catch (IOException e) { return; }
+                    if (byte1 == 0b10101010) protocolState = ProtocolState.FrameStarted;
+                    break;
 
-            if ((byte1 & 0b10000000) == 0) continue;
+                case FrameStarted:
+                    int ecgCurve, spo2Curve;
+                    try {
+                        ecgCurve = this.read14Bit(stream);
+                        spo2Curve = this.read14Bit(stream);
+                    }
+                    catch (IOException e) { return; }
 
-            try {
-                byte2 = stream.read();
-            }
-            catch (IOException e) {
-                return;
-            }
+                    if (ecgCurve < 0 || spo2Curve < 0) {
+                        protocolState = ProtocolState.WaitForFrameStart;
+                        Log.d("ECG", "Invalid ECG/SpO2 value");
+                        break;
+                    }
 
-            if ((byte2 & 0b10000000) != 0) continue;
+                    graphBuffer.insertEcgValue(ecgCurve);
+                    graphBuffer.insertSpo2Value(spo2Curve);
+                    graphBuffer.next();
 
-            if (transport != null) {
-                transport.put(new byte[]{(byte) byte1, (byte) byte2});
-            }
+                    protocolState = ProtocolState.WaitForOptionalData;
+                    break;
 
-            int type = (byte1 & 0b01100000) >> 5;
+                case WaitForOptionalData:
+                    try { byte1 = stream.read(); }
+                    catch (IOException e) { return; }
+                    if (byte1 == 0b10101010) {
+                        protocolState = ProtocolState.FrameStarted;
+                        break;
+                    }
+                    else if ((byte1 & 0b11000000) != 0b11000000) {
+                        protocolState = ProtocolState.WaitForFrameStart;
+                        break;
+                    }
 
-            if (type == 0) {
-                int value = byte2;
-                value |= (byte1 & 0b00011111) << 7;
-                ecgUpdate(value);
+                    int type = (byte1 & 0b00111000) >> 3;
+
+                    try { byte2 = stream.read(); }
+                    catch (IOException e) { return; }
+                    if ((byte2 & 0b10000000) != 0) {
+                        protocolState = ProtocolState.WaitForFrameStart;
+                        break;
+                    }
+
+                    int value = ((byte1 & 0b00000111) << 7) | byte2;
+
+                    switch (type) {
+                        case 0b000:
+                            pulseUpdate(value);
+                            break;
+
+                        case 0b001:
+                            spo2Update(value);
+                            break;
+                    }
+                    break;
             }
-            else if (type == 1) {
-                int value = byte2;
-                value |= (byte1 & 0b00001111) << 6;
-                pulseUpdate(value);
-            }
-            else {
-                Log.d("ECG", "unknown type " + type);
-            }
+            //if (transport != null) {
+            //     transport.put(new byte[]{(byte) byte1, (byte) byte2});
+            //}
         }
+    }
+
+    private int read14Bit(InputStream stream) throws IOException {
+        int byte1 = stream.read();
+        int byte2 = stream.read();
+        if ((byte1 & 0b10000000) != 0 || (byte2 & 0b10000000) != 0) return -1;
+        return byte1 << 7 | byte2;
     }
 
     private void setConnected(boolean status) {
