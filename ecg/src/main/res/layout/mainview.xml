@@ -8,125 +8,140 @@
     android:orientation="vertical"
     >
 
-    <android.opengl.GLSurfaceView
-        android:id="@+id/glView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent" />
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:weightSum="1">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="@android:style/TextAppearance.Holo.Small"
-        android:text="Connected"
-        android:id="@+id/statusText"
-        android:layout_gravity="top|right"
-        android:layout_marginTop="5sp"
-        android:layout_marginRight="5sp" />
-
-    <ImageView
-        android:layout_width="30dp"
-        android:layout_height="30dp"
-        android:id="@+id/heartImage"
-        android:src="@drawable/heart"
-        android:visibility="invisible" />
-
-    <ImageView
-        android:layout_width="23dp"
-        android:layout_height="72dp"
-        android:id="@+id/logoView"
-        android:src="@drawable/fhlogo"
-        android:contentDescription="Logo"
-        android:layout_marginTop="5sp" />
-
-    <GridLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|right"
-        android:layout_marginRight="5sp">
-
-        <TextView
-            android:layout_height="wrap_content"
-            android:text="0"
-            android:id="@+id/rateText"
-            android:gravity="right|center_vertical"
-            android:textSize="50sp"
-            android:textColor="@color/ecgValues"
-            android:paddingRight="5sp"
-            android:layout_width="110dp"
-            android:layout_column="0"
-            android:layout_row="0"
-            android:layout_rowSpan="2"
-            android:paddingLeft="5sp" />
-
-        <TextView
-            android:text="bpm"
-            android:orientation="vertical"
-            android:layout_width="wrap_content"
+        <android.opengl.GLSurfaceView
+            android:id="@+id/glView"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/bpmLabel"
-            android:textColor="@color/ecgValues"
-            android:layout_column="1"
-            android:layout_row="0"
-            android:layout_gravity="fill_vertical"
-            android:layout_rowWeight="1"
-            android:gravity="bottom"
-            android:paddingBottom="2sp" />
+            android:layout_weight="1"
+            android:layout_gravity="fill_vertical" />
 
-        <TextView
+        <GridLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="100"
-            android:id="@+id/spo2Text"
-            android:gravity="right|center_vertical"
-            android:textSize="50sp"
-            android:paddingRight="5sp"
-            android:textColor="@color/spo2Values"
-            android:layout_width="110dp"
-            android:layout_column="0"
-            android:layout_row="2"
-            android:layout_rowSpan="2"
-            android:paddingLeft="5sp" />
+            android:layout_weight="1"
+            android:layout_gravity="right"
+            android:background="@android:color/black">
 
-        <TextView
-            android:text="%"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/percentLabel"
-            android:textSize="15sp"
-            android:textColor="@color/spo2Values"
-            android:layout_row="2"
-            android:layout_column="1"
-            android:layout_rowWeight="1"
-            android:layout_gravity="fill_vertical"
-            android:gravity="bottom"
-            android:paddingBottom="2sp" />
+            <ImageView
+                android:layout_width="23dp"
+                android:id="@+id/logoView"
+                android:src="@drawable/fhlogo"
+                android:contentDescription="Logo"
+                android:layout_column="0"
+                android:layout_rowSpan="2"
+                android:layout_gravity="center_vertical"
+                android:layout_height="44dp" />
 
-        <TextView
-            android:text="SₚO₂"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/spo2Label"
-            android:textSize="15sp"
-            android:textColor="@color/spo2Values"
-            android:layout_row="3"
-            android:layout_column="1"
-            android:layout_rowWeight="1"
-            android:layout_gravity="fill_vertical"
-            android:gravity="top"
-            android:paddingTop="2sp" />
+            <TextView
+                android:layout_height="wrap_content"
+                android:text="–––"
+                android:id="@+id/rateText"
+                android:gravity="right|center_vertical"
+                android:textSize="50sp"
+                android:textColor="@color/ecgValues"
+                android:paddingRight="5sp"
+                android:layout_column="1"
+                android:layout_row="0"
+                android:layout_rowSpan="2"
+                android:paddingLeft="5sp"
+                android:layout_width="125sp" />
 
-        <TextView
-            android:text="HR"
-            android:orientation="vertical"
-            android:id="@+id/hrLabel"
-            android:textColor="@color/ecgValues"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_column="1"
-            android:layout_row="1"
-            android:layout_gravity="fill_vertical"
-            android:layout_rowWeight="1"
-            android:gravity="top"
-            android:paddingTop="2sp" />
-    </GridLayout>
+            <TextView
+                android:text="bpm"
+                android:layout_height="wrap_content"
+                android:id="@+id/bpmLabel"
+                android:textColor="@color/ecgValues"
+                android:layout_column="2"
+                android:layout_row="0"
+                android:layout_width="wrap_content"
+                android:layout_rowWeight="1"
+                android:layout_gravity="bottom" />
+
+            <TextView
+                android:text="HR"
+                android:id="@+id/hrLabel"
+                android:textColor="@color/ecgValues"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="2"
+                android:layout_row="1"
+                android:layout_rowWeight="1"
+                android:layout_gravity="top" />
+
+            <TextView
+                android:layout_height="wrap_content"
+                android:text="–––"
+                android:id="@+id/spo2Text"
+                android:gravity="right|center_vertical"
+                android:textSize="50sp"
+                android:paddingRight="5sp"
+                android:textColor="@color/spo2Values"
+                android:layout_column="3"
+                android:layout_row="0"
+                android:layout_rowSpan="2"
+                android:paddingLeft="5sp"
+                android:layout_width="125sp" />
+
+            <TextView
+                android:text="SₚO₂"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/spo2Label"
+                android:textSize="15sp"
+                android:textColor="@color/spo2Values"
+                android:layout_row="1"
+                android:layout_column="4"
+                android:layout_rowWeight="1"
+                android:gravity="center_vertical"
+                android:layout_gravity="top" />
+
+            <TextView
+                android:text="%"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/percentLabel"
+                android:textSize="15sp"
+                android:textColor="@color/spo2Values"
+                android:layout_row="0"
+                android:layout_column="4"
+                android:layout_rowWeight="1"
+                android:layout_gravity="bottom" />
+
+            <ImageView
+                android:id="@+id/heartImage"
+                android:src="@drawable/heart"
+                android:visibility="visible"
+                android:layout_gravity="left|center_vertical|center_horizontal"
+                android:layout_column="6"
+                android:layout_row="0"
+                android:layout_rowSpan="2"
+                android:layout_height="44dp"
+                android:layout_width="44dp"
+                android:layout_marginRight="10sp"
+                android:layout_marginLeft="10sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@android:style/TextAppearance.Holo.Small"
+                android:text="Connected"
+                android:id="@+id/statusText"
+                android:layout_column="5"
+                android:layout_rowSpan="2"
+                android:layout_row="0"
+                android:layout_gravity="center_vertical|fill_horizontal"
+                android:layout_marginLeft="5sp"
+                android:layout_marginRight="5sp"
+                android:layout_columnWeight="1"
+                android:gravity="center" />
+
+        </GridLayout>
+    </LinearLayout>
 
 </FrameLayout>

@@ -73,6 +73,8 @@ public class MainActivity extends Activity {
         heartImage = (ImageView)findViewById(R.id.heartImage);
         updateHandler = new Handler();
 
+        heartImage.setVisibility(View.INVISIBLE);
+
         //transport = new DataTransport();
         //transport.start();
         //transport.connect("10.0.0.19", 43531);
@@ -169,7 +171,7 @@ public class MainActivity extends Activity {
 
     private final Runnable beatOn = new Runnable() {
         public void run() {
-            rateText.setText(String.valueOf(pulse));
+            rateText.setText(pulse != 0 ? String.valueOf(pulse) : "–––");
             heartImage.setVisibility(View.VISIBLE);
             toneGenerator.play();
         }
@@ -183,7 +185,7 @@ public class MainActivity extends Activity {
 
     private final Runnable spo2Update = new Runnable() {
         public void run() {
-            spo2Text.setText(String.valueOf(spo2));
+            spo2Text.setText(spo2 != 0 ? String.valueOf(spo2) : "–––");
         }
     };
 
@@ -294,6 +296,8 @@ public class MainActivity extends Activity {
                 }
                 else {
                     statusText.setText("Disconnected");
+                    spo2Text.setText("–––");
+                    rateText.setText("–––");
                 }
             }
         });
